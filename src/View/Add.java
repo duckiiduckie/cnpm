@@ -9,6 +9,7 @@ import Model.Schedule;
 import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -164,9 +165,14 @@ public class Add extends javax.swing.JFrame {
             int flightId = Integer.parseInt(jTextField5.getText());
             Schedule schedule = new Schedule(0,gate,timestamp,status,airCraft,flightId);
             dao.addSchedule(schedule);
+            JOptionPane.showMessageDialog(this, "Succeed");
         } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Fail");
             e.printStackTrace();
         }
+        this.setVisible(false);
+        FlightManagerCtrl flightManagerCtrl = new FlightManagerCtrl();
+        flightManagerCtrl.setVisible(true);
     }//GEN-LAST:event_jButton1ActionPerformed
 
 

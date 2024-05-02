@@ -29,7 +29,8 @@ public class SearchFlight extends javax.swing.JFrame {
             displayFlights(flights);
         }
         catch(Exception e){
-            
+            FlightManagerCtrl flightManagerCtrl = new FlightManagerCtrl();
+            flightManagerCtrl.setVisible(true);
         }
     }
 
@@ -221,6 +222,8 @@ public class SearchFlight extends javax.swing.JFrame {
             displayFlights(flights);
         }
         catch(Exception e){
+            FlightManagerCtrl flightManagerCtrl = new FlightManagerCtrl();
+            flightManagerCtrl.setVisible(true);
         }
     }//GEN-LAST:event_jButton1ActionPerformed
 

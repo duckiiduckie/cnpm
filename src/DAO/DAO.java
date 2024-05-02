@@ -8,6 +8,7 @@ import java.util.*;
 import java.sql.*;
 import Model.Flight;
 import Model.Schedule;
+import java.util.concurrent.TimeUnit;
 
 /**
  *
@@ -78,13 +79,15 @@ public class DAO {
         return flights;
     }
     
-    public List<Schedule> searchSchedules(Timestamp departureTime) throws SQLException {
+    public List<Schedule> searchSchedules(Timestamp departureTime, int flightId) throws SQLException {
         List<Schedule> schedules = new ArrayList<>();
-        String query = "SELECT * FROM Schedule WHERE departureTime = ?";
+        String query = "SELECT * FROM Schedule WHERE departureTime >= ? AND departureTime < ? AND flightId = ?";
         try {
-            
             PreparedStatement statement = _connect.prepareStatement(query);
+            // Đặt khoảng thời gian từ departureTime đến departureTime + 1 tiếng
             statement.setTimestamp(1, departureTime);
+            statement.setTimestamp(2, new Timestamp(departureTime.getTime() + TimeUnit.HOURS.toMillis(1)));
+            statement.setInt(3, flightId);
             ResultSet result = statement.executeQuery();
             while (result.next()) {
                 Schedule schedule = new Schedule();
@@ -92,7 +95,7 @@ public class DAO {
                 schedule.setAircraft(result.getString("aircraft"));
                 schedule.setGate(result.getString("gate"));
                 schedule.setStatus(result.getString("status"));
-                schedule.setDepartureTime(result.getTimestamp("durationMinutes"));
+                schedule.setDepartureTime(result.getTimestamp("departureTime")); // Sử dụng cột chứa thời gian khởi hành
                 schedule.setFlightId(result.getInt("flightId"));
                 schedules.add(schedule);
             }
@@ -101,30 +104,33 @@ public class DAO {
         }
         return schedules;
     }
+
     
     public List<Schedule> searchScheduleByFlight(int flightId) throws SQLException {
-        List<Schedule> schedules = new ArrayList<>();
-        String query = "SELECT * FROM Schedule WHERE flightId = ?";
-        try {
-            
-            PreparedStatement statement = _connect.prepareStatement(query);
-            statement.setInt(1, flightId);
-            ResultSet result = statement.executeQuery();
-            while (result.next()) {
-                Schedule schedule = new Schedule();
-                schedule.setId(result.getInt("id"));
-                schedule.setAircraft(result.getString("aircraft"));
-                schedule.setGate(result.getString("gate"));
-                schedule.setStatus(result.getString("status"));
-                schedule.setDepartureTime(result.getTimestamp("durationMinutes"));
-                schedule.setFlightId(result.getInt("flightId"));
-                schedules.add(schedule);
-            }
-        } catch (SQLException ex) {
-            throw ex;
+    List<Schedule> schedules = new ArrayList<>();
+    String query = "SELECT * FROM Schedule WHERE flightId = ?";
+    try {
+        PreparedStatement statement = _connect.prepareStatement(query);
+        statement.setInt(1, flightId);
+        ResultSet result = statement.executeQuery();
+        while (result.next()) {
+            Schedule schedule = new Schedule();
+            schedule.setId(result.getInt("id"));
+            schedule.setAircraft(result.getString("aircraft"));
+            schedule.setGate(result.getString("gate"));
+            schedule.setStatus(result.getString("status"));
+            schedule.setDepartureTime(result.getTimestamp("departureTime")); // Thay đổi tên cột
+            schedule.setFlightId(result.getInt("flightId"));
+            schedules.add(schedule);
         }
-        return schedules;
+    } catch (SQLException ex) {
+        // Xử lý ngoại lệ hoặc ghi nhật ký ở đây
+        ex.printStackTrace(); // Hoặc thay vì in ra, bạn có thể xử lý ngoại lệ một cách phù hợp với ứng dụng của bạn.
+        throw ex; // Ném ra ngoại lệ để phía gọi sử lý.
     }
+    return schedules;
+}
+
     
     public List<Schedule> searchAllSchedules() throws SQLException {
         List<Schedule> schedules = new ArrayList<>();

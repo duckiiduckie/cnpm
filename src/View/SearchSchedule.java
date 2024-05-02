@@ -7,6 +7,9 @@ package View;
 import DAO.DAO;
 import Model.Flight;
 import Model.Schedule;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import javax.swing.table.DefaultTableModel;
 
@@ -25,18 +28,19 @@ public class SearchSchedule extends javax.swing.JFrame {
     private String status;
     private String aircraft;
     private String flightId;
-    public SearchSchedule(String scheduleId) {
+    public SearchSchedule(String flight) {
         initComponents();
-        jTextField2.setText(scheduleId);
-        flightId = scheduleId;
+        jTextField2.setText(flight);
+        flightId = flight;
         dao = new DAO();
         try {
-            List<Schedule> schedules = dao.searchAllSchedules();
+            List<Schedule> schedules = dao.searchScheduleByFlight(Integer.parseInt(flight));
             displaySchedules(schedules);
             System.out.println("oke");
         }
         catch(Exception e){
-            
+            FlightManagerCtrl flightManagerCtrl = new FlightManagerCtrl();
+            flightManagerCtrl.setVisible(true);
         }
     }
 
@@ -114,6 +118,11 @@ public class SearchSchedule extends javax.swing.JFrame {
         jLabel2.setText("Departure Time");
 
         jButton1.setText("Search");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
 
         jTextField2.setText("jTextField2");
 
@@ -222,6 +231,22 @@ public class SearchSchedule extends javax.swing.JFrame {
         status = model.getValueAt(row, 3).toString();
         aircraft = model.getValueAt(row, 4).toString();
     }//GEN-LAST:event_jTable1MouseClicked
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        String departureTime = jTextField1.getText();
+        System.out.println(departureTime);
+        try {
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            Date parsedDate = dateFormat.parse(departureTime);
+            Timestamp timestamp = new Timestamp(parsedDate.getTime());
+            List<Schedule> schedules = dao.searchSchedules(timestamp, Integer.parseInt(flightId));
+            displaySchedules(schedules);
+        }
+        catch(Exception e){
+            FlightManagerCtrl flightManagerCtrl = new FlightManagerCtrl();
+            flightManagerCtrl.setVisible(true);
+        }
+    }//GEN-LAST:event_jButton1ActionPerformed
                                  
     private void displaySchedules(List<Schedule> schedules) {
         DefaultTableModel model = new DefaultTableModel();
